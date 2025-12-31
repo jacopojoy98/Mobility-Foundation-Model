@@ -1,0 +1,12 @@
+IMPORTANTE
+
+	Per ora nel progetto non è davvero importante fare delle astruse sul piano dei modelli:
+	Quello che per ora dobbiamo fare è:
+		
+	1 - Astrazione del Dato (tokenizzazione). Tentare con quelli che si era pensato
+
+	2 - Utilizzare un modello a Transformer sia su dati a traiettoria sia su dati a viaggi
+
+	3 - Provare a vedere cosa succede facendo l'allineamento
+
+	4 - Provare diversi task sottostanti 
