@@ -1,4 +1,7 @@
 import pandas as pd
+import os
+import tqdm
+import datetime
 
 def voyages_tokenizer(raw_voyages_data: pd.DataFrame):
     return 0
@@ -7,12 +10,14 @@ def voyages_tokenizer(raw_voyages_data: pd.DataFrame):
 def load_osm_data(center_point: tuple, radius: int, cache_dir: str = "osm_cache"):
     lat, lon = center_point
 
+def find_trajectory_center(raw_trajectory_data: pd.DataFrame) -> tuple :
+    return 0
 
 def trajectory_tokenizer(raw_trajectory_data: pd.DataFrame):
-    center_point = (40.7128, -74.0060)
-    dist = 10000
-    total_features = {}
-    G, edges, nodes, intersections, pois_points, landuse = load_osm_data(center_point, dist)
+    
+    center_point = find_trajectory_center(raw_trajectory_data)
+    radius_meters = 1000
+    G, edges, nodes, intersections, pois_points, landuse = load_osm_data(center_point, radius_meters)
     pois_points = [(p.y, p.x) for p in pois_points]
     dir_traj = os.path.join("Data","final_data_ny")
     for j, filename in tqdm.tqdm(enumerate(os.listdir(dir_traj)), total = 9998):
