@@ -41,27 +41,21 @@ def bearing(p1, p2):
 # OSM DATA FETCHING
 # ============================================================
 
-def safe_features_from_point(center_point, tags, dist):
+def safe_features_from_bbox(bbox, tags):
     try:
-        gdf = ox.features_from_point(center_point, tags=tags, dist=dist)
+        gdf = ox.features.features_from_bbox(bbox, tags=tags)
         return gdf
     except InsufficientResponseError:
         print(f"⚠️  No features found for tags {tags}. Returning empty GeoDataFrame.")
         return gpd.GeoDataFrame(geometry=[])
 
-
-def load_osm_data(center_point, dist=2000, cache_dir="osm_cache", cache_name=None):
-    """
-    Load OSM data (road network, intersections, POIs, land-use polygons) for an area.
-    Uses on-disk caching to avoid re-downloading the same data.
-    """
-
+def load_osm_data(data, cache_dir="osm_cache", cache_name=None):
     # ------------------------------------------------------------
     # 1. Compute cache path
     # ------------------------------------------------------------
-    lat, lon = center_point
-    if cache_name is None:
-        cache_name = f"osm_{round(lat, 4)}_{round(lon, 4)}_{dist}m"
+    bbox = data.total_bounds
+    [north, south, east, west] = bbox
+    cache_name = f"osm_{round(north,3)}_{round(south,3)}_{round(east,3)}_{round(west,3)}"
 
     os.makedirs(cache_dir, exist_ok=True)
     cache_path = os.path.join(cache_dir, cache_name)
@@ -69,7 +63,7 @@ def load_osm_data(center_point, dist=2000, cache_dir="osm_cache", cache_name=Non
     graph_file = f"{cache_path}_graph.graphml"
     edges_file = f"{cache_path}_edges.gpkg"
     nodes_file = f"{cache_path}_nodes.gpkg"
-    pois_file = f"{cache_path}_pois.gpkg"
+    pois_file = f"{cache_path}_pois.json"
     landuse_file = f"{cache_path}_landuse.gpkg"
 
     # ------------------------------------------------------------
@@ -89,37 +83,24 @@ def load_osm_data(center_point, dist=2000, cache_dir="osm_cache", cache_name=Non
     # ------------------------------------------------------------
     # 3. Otherwise, download from OSM
     # ------------------------------------------------------------
-    print(f"🌐 Downloading OSM data for {center_point} (dist={dist} m)...")
-    def try_load(dist, network_type):
-        print(f"Trying OSM download: dist={dist}, type={network_type}")
-        return ox.graph_from_point(center_point, dist=dist, network_type=network_type)
+    print(f"🌐 Downloading OSM data for bbox {bbox}...")
     try:
-        G = try_load(dist, "drive")
+        print(f"Trying osm download of 'drive' network")
+        G = ox.graph_from_bbox(bbox, network_type='drive')
     except ValueError:
-        print("No 'drive' network found, retrying with larger distance...")
+        print("No 'drive' network found, switching to 'all' network...")
         try:
-            G = try_load(dist * 2, "drive")
-        except ValueError:
-            print("Still no results, switching to 'all' network type...")
-            G = try_load(dist * 2, "all")
+            G = ox.graph_from_bbox(bbox, network_type='all')
+        except :
+            raise ValueError("No OSM network found")
 
     gdf_edges = ox.graph_to_gdfs(G, nodes=False, edges=True)
     gdf_nodes = ox.graph_to_gdfs(G, nodes=True, edges=False)
-    intersections = [(n.y, n.x) for n in gdf_nodes.geometry]
-
-    # --- Safe feature loading ---
-    def safe_features_from_point(tags):
-        try:
-            gdf = ox.features_from_point(center_point, tags=tags, dist=dist)
-            return gdf
-        except InsufficientResponseError:
-            print(f"⚠️  No features found for tags {tags}. Returning empty GeoDataFrame.")
-            return gpd.GeoDataFrame(geometry=[])
-
+    intersections = np.column_stack((gdf_nodes.geometry.y.values,\
+                                     gdf_nodes.geometry.x.values))
     # POIs and landuse
-    pois = safe_features_from_point({'amenity': True, 'shop': True, 'tourism': True, 'leisure': True})
-    landuse = safe_features_from_point({'landuse': True})
-
+    pois = safe_features_from_bbox(bbox, {'amenity':True,'shop': True, 'tourism': True})
+    landuse = safe_features_from_bbox(bbox, {'landuse': True})
     # --- Compute centrality ---
     print("Computing network centrality (this may take a while for large graphs)...")
     try:
@@ -132,11 +113,11 @@ def load_osm_data(center_point, dist=2000, cache_dir="osm_cache", cache_name=Non
     # ------------------------------------------------------------
     # 4. Save to cache for reuse
     # ------------------------------------------------------------
-    print(f"💾 Saving OSM data to cache: {cache_path}")
+    print(f"Saving OSM data to cache: {cache_path}")
     ox.save_graphml(G, graph_file)
     gdf_edges.to_file(edges_file, driver="GPKG")
     gdf_nodes.to_file(nodes_file, driver="GPKG")
-    pois.to_file(pois_file, driver="GPKG")
+    pois.to_file(pois_file,  driver="GeoJSON")
     landuse.to_file(landuse_file, driver="GPKG")
 
     pois_points = pois[pois.geometry.type == "Point"].geometry
