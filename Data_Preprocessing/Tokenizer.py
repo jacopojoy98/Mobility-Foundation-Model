@@ -14,7 +14,7 @@ def load_osm_data(center_point: tuple, radius: int, cache_dir: str = "osm_cache"
 def find_trajectory_center(raw_trajectory_data: pd.DataFrame) -> tuple :
     return 0
 
-def trajectory_tokenizer(raw_trajectory_data: pd.DataFrame):
+def trajectory_tokenizer(raw_trajectory_data: gpd.GeoDataFrame):
     
     center_point = find_trajectory_center(raw_trajectory_data)
     radius_meters = 1000
