@@ -10,14 +10,17 @@ class Data():
         self.voyages_data_path = voyages_data_path
         self.trajectory_data_path = trajectory_data_path
     
-    def load_voyages_data(self) -> gpd.GeoDataFrame: 
+    def load_voyages_data(self) -> gpd.GeoDataFrame:     
         _, extension = os.path.splitext(self.voyages_data_path)
+        if extension == '.parquet':
+            self.raw_voyages_data = gpd.read_parquet(self.voyages_data_path)
         if extension == '.csv':
-            self.raw_voyages_data = pd.read_csv(self.voyages_data_path)
+            pandas_raw_voyages_data = pd.read_csv(self.voyages_data_path)
+            self.raw_voyages_data = gpd.GeoDataFrame
     
     def load_trajectory_data(self) -> gpd.GeoDataFrame:
         _, extension = os.path.splitext(self.trajectory_data_path)
-        if extension == '.parquet':
+        if extension == '.parquet': 
             self.raw_trajectory_data = gpd.read_parquet(self.trajectory_data_path)
         elif extension == '.csv':
             self.raw_trajectory_data = pd.read_csv(self.trajectory_data_path)
