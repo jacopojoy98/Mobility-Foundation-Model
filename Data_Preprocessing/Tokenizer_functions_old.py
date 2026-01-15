@@ -98,16 +98,26 @@ def load_osm_data(data, cache_dir="osm_cache", cache_name=None):
     gdf_nodes = ox.graph_to_gdfs(G, nodes=True, edges=False)
     intersections = np.column_stack((gdf_nodes.geometry.y.values,\
                                      gdf_nodes.geometry.x.values))
-    # POIs and landuse
+    print(f"Computing Point of INterest and Landuse")
+    '''
+    Extraction of OSM-based features we implement in the toenizer
+    Here we chode:
+        - Pois:     Points Of Interest in the map. In particular we will be ineterested in their densisty around each point.
+        - Landuse:  How the land is utilized. We will be interested in how diversly the land is used around a point.   
+    '''
     pois = safe_features_from_bbox(bbox, {'amenity':True,'shop': True, 'tourism': True})
     landuse = safe_features_from_bbox(bbox, {'landuse': True})
-    # --- Compute centrality ---
+    '''
+    Extraction of the Graph-based features in the tokenizer.
+    Here we chose:
+        -Network centrality
+    '''
     print("Computing network centrality (this may take a while for large graphs)...")
     try:
         G_undirected = ox.utils_graph.get_undirected(G)
     except AttributeError:
         G_undirected = nx.Graph(G)
-    centrality_dict = nx.betweenness_centrality(G_undirected, k=500, normalized=True)
+    centrality_dict = nx.betweenness_centrality(G_undirected, k=5000, normalized=True)
     nx.set_node_attributes(G, centrality_dict, "centrality")
 
     # ------------------------------------------------------------
@@ -166,7 +176,7 @@ def map_match_point_to_road(G, point):
     return edge_data
 
 def point_road_type(point, G):
-    rt = ["motorway", "trunk", "primary", "secondary", "tertiary", "unclassified", "residential", "service"]
+    r
     try:
         edge_data = map_match_point_to_road(G, point)
         road_type = edge_data.get("highway", "unknown")

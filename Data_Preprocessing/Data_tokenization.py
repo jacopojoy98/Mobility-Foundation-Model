@@ -1,7 +1,8 @@
 import os 
+import numpy as np
 import pandas as pd
 import geopandas as gpd
-
+import pickle
 from Tokenizer import voyages_tokenizer, trajectory_tokenizer
 from Tokenizer_functions_old import load_osm_data
 
@@ -18,8 +19,8 @@ class Data():
             pandas_raw_voyages_data = pd.read_csv(self.voyages_data_path)
             self.raw_voyages_data = gpd.GeoDataFrame(
                 pandas_raw_voyages_data,            
-                geometry = gpd.points_from_xy(pandas_raw_voyages_data["lat"]                                              ,
-                                              pandas_raw_voyages_data["lon"]),
+                geometry = gpd.points_from_xy(pandas_raw_voyages_data["lon"]                                              ,
+                                              pandas_raw_voyages_data["lat"]),
                crs = "EPSG:4326"
             )
     
@@ -31,8 +32,8 @@ class Data():
             pandas_raw_trajectory_data = pd.read_csv(self.trajectory_data_path)
             self.raw_trajectory_data = gpd.GeoDataFrame(
                 pandas_raw_trajectory_data,
-                geometry=gpd.points_from_xy(pandas_raw_trajectory_data["lat"],
-                                            pandas_raw_trajectory_data["lon"]),
+                geometry=gpd.points_from_xy(pandas_raw_trajectory_data["lon"],
+                                            pandas_raw_trajectory_data["lat"]),
                 crs = "EPSG:4326"                                            
             )
         # if set(self.raw_trajectory_data.columns) != {'uid', 'lat', 'lon', 'timestamp'}:
@@ -57,7 +58,22 @@ class Data():
 ## TEST
 
 if __name__ == "__main__":
-    tajectory_path = "./Datasets/nyc_merged.parquet"
-    data=Data(trajectory_data_path= tajectory_path)
+    # a = np.arange(0,10)
+    # b = np.arange(10,20)
+    # c = np.arange(20,30)
+    # d = np.stack([a,b,c], axis = -1)
+    # e_0 = np.concatenate([a,b,c], axis = 0)
+    # e_1 = np.concatenate([a,b,c], axis = -1)
+    # f = np.hstack([a,b,c])
+    # print(f"concatenate_0: {e_0}")
+    # print(f"concatenate_1: {e_1}")
+    # print(f"stack_-1: {d}")
+    # print(f"hstack: {f}")
+    # exit()  
+    tajectory_path = "~/Modelli/Datasets/nyc_merged_preprocessed_stops.parquet"
+    data = Data(trajectory_data_path = tajectory_path)
     data.load_trajectory_data()
     data.osm_data_from_trajectory()
+    tokens = trajectory_tokenizer(data.raw_trajectory_data, data.G, data.pois_points, data.landuse)
+    with open('preliminary_tokens.pkl','wb') as f:
+        pickle.dump(tokens, f)
