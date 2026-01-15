@@ -46,11 +46,11 @@ def trajectory_tokenizer(raw_trajectory_data: gpd.GeoDataFrame, G, pois, landuse
     return total_tokens
 
 
-def trajectory_downstream(raw_trajectory_data: gpd.GeoDataFrame):
-    for user, user_trajectory_data in raw_trajectory_data.groupby(['user']):
-        for traj_id, single_trajectroy_data in user_trajectory_data.groupby(['traj_id']):
-            _destination = destination(single_trajectroy_data)
-            _time_of_arrival = time_of_arrival(single_trajectroy_data)
+# def trajectory_downstream(raw_trajectory_data: gpd.GeoDataFrame):
+#     for user, user_trajectory_data in raw_trajectory_data.groupby(['user']):
+#         for traj_id, single_trajectroy_data in user_trajectory_data.groupby(['traj_id']):
+#             _destination = destination(single_trajectroy_data)
+#             _time_of_arrival = time_of_arrival(single_trajectroy_data)
 
     '''
     
