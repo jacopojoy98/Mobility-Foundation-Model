@@ -20,4 +20,3 @@ class Trajectory_transformer(nn.Module):
         preliminary_embedding = self.preliminary_linear_layer(x)
 
         embedding = self.transformer_encoder(preliminary_embedding)
-
