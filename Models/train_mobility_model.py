@@ -4,13 +4,13 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 import os
 
-from mobility_transformer import MobilityTransformer, compute_loss
-from trajectory_dataloader import create_dataloader
+from Models.mobility_transformer import MobilityTransformerVector, compute_loss
+from Models.trajectory_dataloader import create_dataloader_vector
 
 
-class TrajectoryTrainer:
+class TrajectoryTrainerVector:
     """
-    Trainer class for the mobility transformer model.
+    Trainer class for the mobility transformer model with vector tokens.
     """
     def __init__(
         self,
@@ -19,6 +19,7 @@ class TrajectoryTrainer:
         val_loader=None,
         learning_rate=1e-4,
         weight_decay=0.01,
+        loss_fn='mse',  # 'mse', 'mae', or 'huber'
         device='cuda' if torch.cuda.is_available() else 'cpu',
         log_dir='./runs'
     ):
@@ -26,6 +27,7 @@ class TrajectoryTrainer:
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.device = device
+        self.loss_fn = loss_fn
         
         # Optimizer
         self.optimizer = torch.optim.AdamW(
@@ -64,7 +66,7 @@ class TrajectoryTrainer:
             
             # Forward pass
             self.optimizer.zero_grad()
-            loss = compute_loss(self.model, inputs, targets, padding_mask)
+            loss = compute_loss(self.model, inputs, targets, padding_mask, self.loss_fn)
             
             # Backward pass
             loss.backward()
@@ -106,7 +108,7 @@ class TrajectoryTrainer:
             padding_mask = batch['padding_mask'].to(self.device)
             
             # Forward pass
-            loss = compute_loss(self.model, inputs, targets, padding_mask)
+            loss = compute_loss(self.model, inputs, targets, padding_mask, self.loss_fn)
             
             total_loss += loss.item()
             num_batches += 1
@@ -182,18 +184,20 @@ class TrajectoryTrainer:
 
 
 def main():
-    """Example training script"""
+    """Example training script for vector tokens"""
     
     # ============================================================
     # PRIMARY CONFIGURATION - CUSTOMIZE FOR YOUR DATA
     # ============================================================
-    VOCAB_SIZE = 10000        # YOUR vocabulary size (number of unique tokens)
+    TOKEN_DIM = 4             # YOUR token vector dimension (e.g., 4 for [20, 0.3, 45, 12])
+    OUTPUT_DIM = 4            # Output dimension (usually same as TOKEN_DIM)
     MAX_SEQ_LENGTH = 128      # YOUR maximum trajectory length
     
     # Training configuration
     BATCH_SIZE = 32
     NUM_EPOCHS = 50
     LEARNING_RATE = 1e-4
+    LOSS_FN = 'mse'           # 'mse', 'mae', or 'huber'
     
     # Model architecture hyperparameters
     D_MODEL = 256             # Embedding dimension
@@ -203,45 +207,46 @@ def main():
     DROPOUT = 0.1             # Dropout rate
     
     # Generate dummy data (replace with your actual tokenized trajectories)
-    print("Generating dummy data...")
+    print("Generating dummy vector token data...")
     train_trajectories = [
-        torch.randint(1, VOCAB_SIZE, (torch.randint(20, MAX_SEQ_LENGTH, (1,)).item(),))
+        torch.randn(torch.randint(20, MAX_SEQ_LENGTH, (1,)).item(), TOKEN_DIM)
         for _ in range(1000)
     ]
     val_trajectories = [
-        torch.randint(1, VOCAB_SIZE, (torch.randint(20, MAX_SEQ_LENGTH, (1,)).item(),))
+        torch.randn(torch.randint(20, MAX_SEQ_LENGTH, (1,)).item(), TOKEN_DIM)
         for _ in range(200)
     ]
     
     # Create dataloaders
-    print("Creating dataloaders...")
-    train_loader = create_dataloader(
+    print("Creating dataloaders for vector tokens...")
+    train_loader = create_dataloader_vector(
         train_trajectories,
         batch_size=BATCH_SIZE,
         max_length=MAX_SEQ_LENGTH,
-        pad_token_id=0,
+        pad_value=0.0,
         shuffle=True
     )
     
-    val_loader = create_dataloader(
+    val_loader = create_dataloader_vector(
         val_trajectories,
         batch_size=BATCH_SIZE,
         max_length=MAX_SEQ_LENGTH,
-        pad_token_id=0,
+        pad_value=0.0,
         shuffle=False
     )
     
     # Create model
-    print("Creating model...")
-    model = MobilityTransformer(
-        vocab_size=VOCAB_SIZE,              # Your vocabulary size
+    print("Creating model for vector tokens...")
+    model = MobilityTransformerVector(
+        token_dim=TOKEN_DIM,              # Your token vector dimension
+        output_dim=OUTPUT_DIM,            # Output dimension
         d_model=D_MODEL,
         nhead=NHEAD,
         num_layers=NUM_LAYERS,
         dim_feedforward=DIM_FEEDFORWARD,
         dropout=DROPOUT,
-        max_seq_length=MAX_SEQ_LENGTH,      # Your max trajectory length
-        learned_pos_encoding=False          # Using sinusoidal positional encoding
+        max_seq_length=MAX_SEQ_LENGTH,    # Your max trajectory length
+        learned_pos_encoding=False        # Using sinusoidal positional encoding
     )
     
     # Count parameters
@@ -249,17 +254,19 @@ def main():
     print(f"Model has {num_params:,} trainable parameters")
     
     # Create trainer
-    trainer = TrajectoryTrainer(
+    trainer = TrajectoryTrainerVector(
         model=model,
         train_loader=train_loader,
         val_loader=val_loader,
         learning_rate=LEARNING_RATE,
         weight_decay=0.01,
+        loss_fn=LOSS_FN,
         device='cuda' if torch.cuda.is_available() else 'cpu'
     )
     
     # Train
-    print("\nStarting training...")
+    print(f"\nTraining on device: {trainer.device}")
+    print("Starting training...")
     trainer.train(num_epochs=NUM_EPOCHS, save_dir='./checkpoints')
 
 

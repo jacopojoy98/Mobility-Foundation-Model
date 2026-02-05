@@ -2,3 +2,4 @@
 Datasets/
 osm_cache/
 cache/
+preliminary_tokens.pkl

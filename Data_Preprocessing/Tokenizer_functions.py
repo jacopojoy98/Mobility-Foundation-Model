@@ -12,7 +12,7 @@ def pointwise_distance(point_1: shapely.Point, point_2: shapely.Point):
     return np.sqrt(((point_1.x-point_2.x)*111320)**2 + ((point_1.y-point_2.y)*111320)**2)
 
 def speed(trajectory: gpd.GeoDataFrame):
-    tmp_speed = [0.0]
+    tmp_speed = [0]
     for i in range(len(trajectory)-1):
         first_point = trajectory.iloc[i]
         second_point = trajectory.iloc[i+1]
@@ -21,7 +21,15 @@ def speed(trajectory: gpd.GeoDataFrame):
         if hop_time_seconds == 0:
             tmp_speed.append(0)    
         else:
-            tmp_speed.append(hop_radius_meters/hop_time_seconds)    
+            speed = hop_radius_meters/hop_time_seconds*3.6
+            if speed<=30: 
+                tmp_speed.append(0)
+            elif speed<=70: 
+                tmp_speed.append(1)
+            elif speed<=100:
+                tmp_speed.append(2)
+            else:
+                tmp_speed.append(3)    
     return np.array(tmp_speed)
 
 def bearing(p1: shapely.Point, p2: shapely.Point):
@@ -32,15 +40,19 @@ def bearing(p1: shapely.Point, p2: shapely.Point):
     return math.atan2(y, x)
 
 def turn_angle(trajectory):
-    bearings = [0.0]
+    bearings = [0]
     for i in range(1, len(trajectory)):
         bearings.append(bearing(trajectory.iloc[i-1]["geometry"], trajectory.iloc[i]["geometry"]))
-    turn_angles = [0.0]
+    turn_angles = [0]
     for i in range(1, len(bearings)):
         dtheta = bearings[i] - bearings[i-1]
+        dtheta = dtheta + math.pi/4
         while dtheta > math.pi: dtheta -= 2 * math.pi
         while dtheta < -math.pi: dtheta += 2 * math.pi
-        turn_angles.append(dtheta)
+        if 0 <= dtheta < math.pi/2 : turn_angles.append(1)
+        if  math.pi/2 <= dtheta < math.pi : turn_angles.append(0)
+        if -math.pi <= dtheta < -math.pi/2 : turn_angles.append(2)
+        else: turn_angles.append(3)
     return np.array(turn_angles)
 
 def minute(trajectory: gpd.GeoDataFrame):
@@ -54,7 +66,10 @@ def tod(trajectory: gpd.GeoDataFrame):
     tmp_tod = []
     for i in range(len(trajectory)):
         _time_of_day = trajectory.iloc[i]["time"].timestamp() % (24 * 60 * 60) / (24 * 60 * 60)
-        tmp_tod.append(_time_of_day)
+        if 7<= _time_of_day< 13: tmp_tod.append(0)
+        elif 13<= _time_of_day<= 17: tmp_tod.append(1)
+        elif 17<= _time_of_day<= 22: tmp_tod.append(2)
+        else: tmp_tod.append(3)
     return np.array(tmp_tod)
 
 def weekday(trajectory: gpd.GeoDataFrame):

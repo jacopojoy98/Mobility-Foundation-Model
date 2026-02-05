@@ -49,6 +49,7 @@ def load_your_vector_tokenized_data():
     # Feature 3: day_of_week (normalized)
     with open("preliminary_tokens.pkl", "rb") as f:
         complete_dataset = pickle.load(f)
+    
     max_seq_length = max[[len(Trajectory) for Trajectory in complete_dataset]]
     token_dim = len(complete_dataset[0][0])
     # REPLACE THIS with loading your actual data

@@ -20,13 +20,11 @@ def trajectory_tokenizer(raw_trajectory_data: gpd.GeoDataFrame, G, pois, landuse
         user_token=[]
         for traj_id, single_trajectory_data in user_trajectory_data.groupby(['traj_id']):
             single_trajectory_token = []
-            speed = Tf.speed(single_trajectory_data)
+            speed = Tf.speed(single_trajectory_data)#  [0-30,30-70,70-100,100+]
             single_trajectory_token.append(speed)
-            turn_angle=Tf.turn_angle(single_trajectory_data)
+            turn_angle=Tf.turn_angle(single_trajectory_data)# [0-45,45-90,90-135,135-180]
             single_trajectory_token.append(turn_angle)
-            minute = Tf.minute(single_trajectory_data)
-            single_trajectory_token.append(minute)
-            tod = Tf.tod(single_trajectory_data)
+            tod = Tf.tod(single_trajectory_data)# [7-13,13-17,17-22,22-7]
             single_trajectory_token.append(tod)
             weekday = Tf.weekday(single_trajectory_data)
             single_trajectory_token.append(weekday)
