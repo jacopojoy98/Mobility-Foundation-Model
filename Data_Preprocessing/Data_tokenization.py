@@ -8,7 +8,7 @@ from collections import Counter
 from sklearn.cluster import DBSCAN
 
 import pickle
-from Tokenizer import voyages_tokenizer, trajectory_tokenizer
+from Tokenizer import voyages_tokenizer, trajectory_tokenizer, debug_tokenizer
 from Tokenizer_functions_old import load_osm_data
 
 class Data():
@@ -592,20 +592,19 @@ if __name__ == "__main__":
     data = Data(trajectory_data_path = tajectory_path)
     data.load_trajectory_data()
 
-    # # Extract all evaluation labels
-    labels = data.extract_all_evaluation_labels(
-        data_type='trajectory',
-        geohash_precision=7,  # ~153m resolution
-        uid_column='user',
-        timestamp_column='time',
-        prefix_ratio=0.8
-    )
-    with open('Data/Labels/evaluation_labels.pkl', 'wb') as f: 
-        pickle.dump(labels, f)
+    # labels = data.extract_all_evaluation_labels(
+    #     data_type='trajectory',
+    #     geohash_precision=7,  # ~153m resolution
+    #     uid_column='user',
+    #     timestamp_column='time',
+    #     prefix_ratio=0.8
+    # )
+    # with open('Data/Labels/evaluation_labels.pkl', 'wb') as f: 
+    #     pickle.dump(labels, f)
 
-    # data.osm_data_from_trajectory()
-    # trajectory_data_split = np.array_split(data.raw_trajectory_data,10)
-    # for s, trajectory_data in enumerate(trajectory_data_split):
-    #     tokens = trajectory_tokenizer(data.raw_trajectory_data, data.G, data.pois_points, data.landuse)
-    #     with open('time_tokens_split'+str(s)+'.pkl','wb') as f:
-    #         pickle.dump(tokens, f)
+    data.osm_data_from_trajectory()
+    trajectory_data_split = np.array_split(data.raw_trajectory_data,10)
+    for s, trajectory_data in enumerate(trajectory_data_split):
+        tokens = debug_tokenizer(data.raw_trajectory_data, data.G, data.pois_points, data.landuse)
+        with open('time_tokens_split'+str(s)+'.pkl','wb') as f:
+            pickle.dump(tokens, f)

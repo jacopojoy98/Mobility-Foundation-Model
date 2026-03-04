@@ -18,7 +18,8 @@ def speed(trajectory: gpd.GeoDataFrame):
         second_point = trajectory.iloc[i+1]
         hop_radius_meters = pointwise_distance(first_point["geometry"], second_point["geometry"])
         hop_time_seconds = (second_point['time'].timestamp() - first_point['time'].timestamp())
-        print(hop_radius_meters, hop_time_seconds)
+        print(f"meters = {hop_radius_meters}, seconds ={hop_time_seconds}, velocity = {hop_radius_meters/hop_time_seconds}")
+        input()
         if hop_time_seconds == 0:
             tmp_speed.append(0)    
         else:
@@ -36,8 +37,6 @@ def speed(trajectory: gpd.GeoDataFrame):
             else:
                 print("select 3")
                 tmp_speed.append(3)
-        input()  
-
     return np.array(tmp_speed)
 
 def bearing(p1: shapely.Point, p2: shapely.Point):

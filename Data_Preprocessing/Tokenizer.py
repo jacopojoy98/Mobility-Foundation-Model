@@ -102,6 +102,42 @@ def change_type_tokens(trajectory_tokens: list):
         total_tokens.append(user_token)
     return total_tokens
 
+def debug_tokenizer(raw_trajectory_data: gpd.GeoDataFrame, G, pois, landuse):
+    total_tokens = []
+    for user, user_trajectory_data in tqdm(raw_trajectory_data.groupby(['user'])):
+        user_token=[]
+        for traj_id, single_trajectory_data in user_trajectory_data.groupby(['traj_id']):
+            single_trajectory_token = []
+            speed = Tf.speed(single_trajectory_data)#  [0-30,30-70,70-100,100+]
+            print(speed)
+            single_trajectory_token.append(speed)
+
+            turn_angle=Tf.turn_angle(single_trajectory_data)# [0-45,45-90,90-135,135-180]
+            print(turn_angle)
+            single_trajectory_token.append(turn_angle)
+
+            tod = Tf.tod(single_trajectory_data)# [7-13,13-17,17-22,22-7]
+            print(tod)
+            single_trajectory_token.append(tod)
+
+            # weekday = Tf.weekday(single_trajectory_data)
+            # single_trajectory_token.append(weekday)
+            # road_type = Tf.road_type(single_trajectory_data, G)
+            # single_trajectory_token.append(road_type)
+            # poi_density = Tf.poi_density(single_trajectory_data, pois)
+            # single_trajectory_token.append(poi_density)
+            # landuse_diversity = Tf.landuse_diversity(single_trajectory_data, landuse) 
+            # single_trajectory_token.append(landuse_diversity)
+            # network_centrality = Tf.network_centrality(single_trajectory_data, G)
+            # single_trajectory_token.append(network_centrality)
+            # print(speed.shape, turn_angle.shape, tod.shape, weekday.shape, road_type.shape, poi_density.shape, landuse_diversity.shape, network_centrality.shape)
+            # try:
+            trajectoy_token = np.stack(single_trajectory_token, axis=-1)
+            user_token.append(trajectoy_token)
+            # print(trajectoy_token.shape)
+        total_tokens.append(user_token)
+    return total_tokens
+
 
 
 if __name__ == "__main__":
