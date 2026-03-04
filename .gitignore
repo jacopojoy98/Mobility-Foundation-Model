@@ -1,5 +1,6 @@
 .venv
-Datasets/
+Data/
 osm_cache/
 cache/
-preliminary_tokens.pkl
+checkpoints/
+

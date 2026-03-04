@@ -18,18 +18,26 @@ def speed(trajectory: gpd.GeoDataFrame):
         second_point = trajectory.iloc[i+1]
         hop_radius_meters = pointwise_distance(first_point["geometry"], second_point["geometry"])
         hop_time_seconds = (second_point['time'].timestamp() - first_point['time'].timestamp())
+        print(hop_radius_meters, hop_time_seconds)
         if hop_time_seconds == 0:
             tmp_speed.append(0)    
         else:
             speed = hop_radius_meters/hop_time_seconds*3.6
+            print(speed)
             if speed<=30: 
+                print("select 0")
                 tmp_speed.append(0)
             elif speed<=70: 
+                print("select 1")
                 tmp_speed.append(1)
             elif speed<=100:
+                print("select 2")
                 tmp_speed.append(2)
             else:
-                tmp_speed.append(3)    
+                print("select 3")
+                tmp_speed.append(3)
+        input()  
+
     return np.array(tmp_speed)
 
 def bearing(p1: shapely.Point, p2: shapely.Point):
@@ -50,8 +58,8 @@ def turn_angle(trajectory):
         while dtheta > math.pi: dtheta -= 2 * math.pi
         while dtheta < -math.pi: dtheta += 2 * math.pi
         if 0 <= dtheta < math.pi/2 : turn_angles.append(1)
-        if  math.pi/2 <= dtheta < math.pi : turn_angles.append(0)
-        if -math.pi <= dtheta < -math.pi/2 : turn_angles.append(2)
+        elif  math.pi/2 <= dtheta < math.pi : turn_angles.append(0)
+        elif -math.pi <= dtheta < -math.pi/2 : turn_angles.append(2)
         else: turn_angles.append(3)
     return np.array(turn_angles)
 

@@ -59,7 +59,7 @@ class MobilityTransformerVector(nn.Module):
         token_dim,              # NEW: dimension of input token vectors
         output_dim,             # NEW: dimension of output token vectors
         d_model=256,
-        nhead=8,
+        nhead=10,
         num_layers=6,
         dim_feedforward=1024,
         dropout=0.1,
@@ -281,7 +281,7 @@ if __name__ == "__main__":
     BATCH_SIZE = 32
     SEQ_LENGTH = 128
     D_MODEL = 256
-    NHEAD = 8
+    NHEAD = 10
     NUM_LAYERS = 6
     
     # Create model for vector tokens
