@@ -74,6 +74,8 @@ if __name__ == "__main__":
     data = Data(trajectory_data_path = tajectory_path)
     data.load_trajectory_data()
     data.osm_data_from_trajectory()
-    tokens = trajectory_tokenizer(data.raw_trajectory_data, data.G, data.pois_points, data.landuse)
-    with open('preliminary_tokens.pkl','wb') as f:
-        pickle.dump(tokens, f)
+    trajectory_data_split = np.array_split(data.raw_trajectory_data,10)
+    for s, trajectory_data in enumerate(trajectory_data_split):
+        tokens = trajectory_tokenizer(data.raw_trajectory_data, data.G, data.pois_points, data.landuse)
+        with open('preliminary_tokens_split'+str(s)+'.pkl','wb') as f:
+            pickle.dump(tokens, f)
