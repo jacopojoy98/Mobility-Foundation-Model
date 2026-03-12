@@ -119,7 +119,7 @@ def debug_tokenizer(raw_trajectory_data: gpd.GeoDataFrame, G, pois, landuse):
             tod = Tf.tod(single_trajectory_data)# [7-13,13-17,17-22,22-7]
             print(tod)
             single_trajectory_token.append(tod)
-
+            input("press enter to continue")
             # weekday = Tf.weekday(single_trajectory_data)
             # single_trajectory_token.append(weekday)
             # road_type = Tf.road_type(single_trajectory_data, G)

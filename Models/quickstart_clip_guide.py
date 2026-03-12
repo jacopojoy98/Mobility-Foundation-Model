@@ -246,8 +246,11 @@ try:
     print("-"*70)
     
     sample_trajectory = torch.tensor([train_trajectories[0][:200]], dtype=torch.float32).to(trainer.device)
+    print(sample_trajectory.shape)  # Should be (1, seq_len, token_dim)
     sample_visit = torch.tensor([train_visits[:200]], dtype=torch.float32).to(trainer.device)
-    sample_visit = sample_visit.unsqueeze(0)
+    print(sample_visit.shape)
+    input()
+    # sample_visit = sample_visit.unsqueeze(0)
     with torch.no_grad():
         traj_embedding = model.encode_trajectory(sample_trajectory)
         visit_embedding = model.encode_visits(sample_visit)

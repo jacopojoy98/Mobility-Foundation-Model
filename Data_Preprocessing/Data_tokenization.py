@@ -159,7 +159,7 @@ class Data():
         data_type: str = 'trajectory',
         uid_column: str = 'user',
         timestamp_column: str = 'time',
-        normalize: bool = True
+        normalize: bool = False
     ) -> Dict:
         """
         Extract time of arrival labels.
@@ -592,19 +592,19 @@ if __name__ == "__main__":
     data = Data(trajectory_data_path = tajectory_path)
     data.load_trajectory_data()
 
-    # labels = data.extract_all_evaluation_labels(
-    #     data_type='trajectory',
-    #     geohash_precision=7,  # ~153m resolution
-    #     uid_column='user',
-    #     timestamp_column='time',
-    #     prefix_ratio=0.8
-    # )
-    # with open('Data/Labels/evaluation_labels.pkl', 'wb') as f: 
-    #     pickle.dump(labels, f)
+    labels = data.extract_all_evaluation_labels(
+        data_type='trajectory',
+        geohash_precision=6,  # ~153m resolution
+        uid_column='user',
+        timestamp_column='time',
+        prefix_ratio=0.8
+    )
+    with open('Data/Labels/evaluation_labels.pkl', 'wb') as f:
+        pickle.dump(labels, f)
 
-    data.osm_data_from_trajectory()
-    trajectory_data_split = np.array_split(data.raw_trajectory_data,10)
-    for s, trajectory_data in enumerate(trajectory_data_split):
-        tokens = debug_tokenizer(data.raw_trajectory_data, data.G, data.pois_points, data.landuse)
-        with open('time_tokens_split'+str(s)+'.pkl','wb') as f:
-            pickle.dump(tokens, f)
+    # data.osm_data_from_trajectory()
+    # trajectory_data_split = np.array_split(data.raw_trajectory_data,10)
+    # for s, trajectory_data in enumerate(trajectory_data_split):
+    #     tokens = debug_tokenizer(data.raw_trajectory_data, data.G, data.pois_points, data.landuse)
+    #     with open('time_tokens_split'+str(s)+'.pkl','wb') as f:
+    #         pickle.dump(tokens, f)

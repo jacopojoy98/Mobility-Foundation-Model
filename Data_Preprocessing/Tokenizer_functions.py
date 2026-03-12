@@ -18,24 +18,17 @@ def speed(trajectory: gpd.GeoDataFrame):
         second_point = trajectory.iloc[i+1]
         hop_radius_meters = pointwise_distance(first_point["geometry"], second_point["geometry"])
         hop_time_seconds = (second_point['time'].timestamp() - first_point['time'].timestamp())
-        print(f"meters = {hop_radius_meters}, seconds ={hop_time_seconds}, velocity = {hop_radius_meters/hop_time_seconds}")
-        input()
         if hop_time_seconds == 0:
             tmp_speed.append(0)    
         else:
             speed = hop_radius_meters/hop_time_seconds*3.6
-            print(speed)
             if speed<=30: 
-                print("select 0")
                 tmp_speed.append(0)
             elif speed<=70: 
-                print("select 1")
                 tmp_speed.append(1)
             elif speed<=100:
-                print("select 2")
                 tmp_speed.append(2)
             else:
-                print("select 3")
                 tmp_speed.append(3)
     return np.array(tmp_speed)
 
@@ -72,7 +65,11 @@ def minute(trajectory: gpd.GeoDataFrame):
 def tod(trajectory: gpd.GeoDataFrame):
     tmp_tod = []
     for i in range(len(trajectory)):
-        _time_of_day = trajectory.iloc[i]["time"].timestamp() % (24 * 60 * 60) / (24 * 60 * 60)
+        print(trajectory.iloc[i]["time"])
+        print(trajectory.iloc[i]["time"].timestamp())
+        print(trajectory.iloc[i]["time"].timestamp() % (24 * 60 * 60) / ( 60 * 60))
+        input()
+        _time_of_day = trajectory.iloc[i]["time"].timestamp() % (24 * 60 * 60) / ( 60 * 60)
         if 7<= _time_of_day< 13: tmp_tod.append(0)
         elif 13<= _time_of_day<= 17: tmp_tod.append(1)
         elif 17<= _time_of_day<= 22: tmp_tod.append(2)

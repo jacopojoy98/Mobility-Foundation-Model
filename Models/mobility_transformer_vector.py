@@ -9,7 +9,7 @@ class PositionalEncoding(nn.Module):
     Implements sinusoidal positional encoding as in "Attention is All You Need".
     Can also use learned positional embeddings.
     """
-    def __init__(self, d_model, max_seq_length=5000, dropout=0.1, learned=False):
+    def __init__(self, d_model, max_seq_length=5000, dropout=0.1, learned=True):
         super().__init__()
         self.dropout = nn.Dropout(p=dropout)
         self.learned = learned
